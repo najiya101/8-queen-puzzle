@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>8 Queen Puzzle</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        .queens {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .queen {
+            width: 50px;
+            height: 50px;
+            background-color: rgb(0, 0, 0); /* Change the color as needed */
+            border-radius: 50%;
+            margin: 0 5px; /* Space between queens */
+        }
+        .chess-board {
+            display: grid;
+            grid-template-columns: repeat(8, 50px);
+            grid-template-rows: repeat(8, 50px);
+            border: 5px solid #000; /* Add a solid black border */
+            border-radius: 5px; /* Optional: Rounded corners for the border */
+        }
+        .chess-board div {
+            width: 50px;
+            height: 50px;
+            position: relative;
+        }
+        .black {
+            background-color: black;
+        }
+        .white {
+            background-color: white;
+        }
+        .queen-on-square {
+            position: absolute; /* Position absolutely within the square */
+            top: 0;
+            left: 0;
+            width: 50px; /* Match the square size */
+            height: 50px; /* Match the square size */
+        }
+    </style>
+</head>
+<body>
+    <h1>8 Queen Puzzle</h1>
+    <div class="queens">
+        <!-- Create 8 queen circles -->
+        <div class="queen"></div>
+        <div class="queen"></div>
+        <div class="queen"></div>
+        <div class="queen"></div>
+        <div class="queen"></div>
+        <div class="queen"></div>
+        <div class="queen"></div>
+        <div class="queen"></div>
+    </div>
+    <div class="chess-board">
+        <!-- JavaScript will create the squares -->
+    </div>
+
+    <script>
+        const chessBoard = document.querySelector('.chess-board');
+
+        for (let row = 0; row < 8; row++) {
+            for (let col = 0; col < 8; col++) {
+                const square = document.createElement('div');
+                if ((row + col) % 2 === 0) {
+                    square.className = 'white';
+                } else {
+                    square.className = 'black';
+                }
+                chessBoard.appendChild(square);
+            }
+        }
+    </script>
+</body>
+</html>
