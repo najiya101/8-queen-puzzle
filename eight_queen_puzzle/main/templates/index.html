@@ -1,9 +1,10 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>8 Queen Puzzle</title>
+    <title>8 Queens Puzzle</title>
     <style>
         body {
             display: flex;
@@ -11,83 +12,72 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            margin: 0;
-            background-color: #f0f0f0;
-            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
         }
         h1 {
+            color: black; /* Title in black */
+            font-size: 2rem;
             margin-bottom: 20px;
         }
-        .queens {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
-        .queen {
-            width: 50px;
-            height: 50px;
-            background-color: rgb(0, 0, 0); /* Change the color as needed */
-            border-radius: 50%;
-            margin: 0 5px; /* Space between queens */
-        }
-        .chess-board {
+        .chessboard {
             display: grid;
             grid-template-columns: repeat(8, 50px);
             grid-template-rows: repeat(8, 50px);
-            border: 5px solid #000; /* Add a solid black border */
-            border-radius: 5px; /* Optional: Rounded corners for the border */
+            border: 2px solid black;
         }
-        .chess-board div {
+        .chessboard div {
             width: 50px;
             height: 50px;
-            position: relative;
-        }
-        .black {
-            background-color: black;
         }
         .white {
             background-color: white;
         }
-        .queen-on-square {
-            position: absolute; /* Position absolutely within the square */
-            top: 0;
-            left: 0;
-            width: 50px; /* Match the square size */
-            height: 50px; /* Match the square size */
+        .black {
+            background-color: gray;
+        }
+        .queen {
+            background-image: url("{% static 'queen.png' %}");
+            background-size: cover;
+            width: 60px;
+            height: 50px;
+        }
+        .attacking {
+            background-color: red;
+        }
+        .queens-row {
+            display: grid;
+            grid-template-columns: repeat(8, 50px);
+            gap: 10px; /* Add space between the queens */
+            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
-    <h1>8 Queen Puzzle</h1>
-    <div class="queens">
-        <!-- Create 8 queen circles -->
-        <div class="queen"></div>
-        <div class="queen"></div>
-        <div class="queen"></div>
-        <div class="queen"></div>
-        <div class="queen"></div>
-        <div class="queen"></div>
-        <div class="queen"></div>
-        <div class="queen"></div>
-    </div>
-    <div class="chess-board">
-        <!-- JavaScript will create the squares -->
+    <!-- Title of the puzzle -->
+    <h1>8 Queens Puzzle</h1>
+
+    <!-- Row for queens placed above the board -->
+    <div class="queens-row">
+        {% for col in col_indices %}
+            <div class="queen"></div>
+        {% endfor %}
     </div>
 
-    <script>
-        const chessBoard = document.querySelector('.chess-board');
-
-        for (let row = 0; row < 8; row++) {
-            for (let col = 0; col < 8; col++) {
-                const square = document.createElement('div');
-                if ((row + col) % 2 === 0) {
-                    square.className = 'white';
-                } else {
-                    square.className = 'black';
-                }
-                chessBoard.appendChild(square);
-            }
-        }
-    </script>
+    <!-- Chessboard -->
+    <div class="chessboard">
+        {% for row in row_indices %}
+            {% for col in col_indices %}
+                {% with queen_pos=row|stringformat:"d"|add:","|add:col|stringformat:"d" %}
+                    {% if queen_pos in queens_positions %}
+                        <div class="queen"></div>
+                    {% elif queen_pos in attacking_positions %}
+                        <div class="attacking"></div>
+                    {% else %}
+                        <div class="{% if row|add:col|divisibleby:2 %}white{% else %}black{% endif %}"></div>
+                    {% endif %}
+                {% endwith %}
+            {% endfor %}
+        {% endfor %}
+    </div>
 </body>
 </html>
