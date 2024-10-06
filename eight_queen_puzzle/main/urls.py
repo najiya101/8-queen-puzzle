@@ -1,8 +1,7 @@
-from django.contrib import admin
 from django.urls import path
-from main.views import index
+from . import views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', index, name='index'),
+    path('', views.index, name='index'),
+    path('get-solution', views.get_solution, name='get_solution'),
 ]

@@ -7,77 +7,162 @@
     <title>8 Queens Puzzle</title>
     <style>
         body {
+            font-family: Arial, sans-serif;
+        }
+
+        .title {
+            text-align: center; /* Center the text */
+            margin: 20px 0; /* Add some margin for spacing */
+        }
+
+        .board-container {
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
-            height: 100vh;
-            background-color: #f4f4f4;
+            margin-top: 20px;
         }
-        h1 {
-            color: black; /* Title in black */
-            font-size: 2rem;
-            margin-bottom: 20px;
-        }
-        .chessboard {
+
+        .board {
             display: grid;
             grid-template-columns: repeat(8, 50px);
             grid-template-rows: repeat(8, 50px);
-            border: 2px solid black;
+            gap: 1px;
+            cursor: pointer; /* Show pointer cursor for chessboard */
         }
-        .chessboard div {
+
+        .cell {
             width: 50px;
             height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
-        .white {
-            background-color: white;
+
+        /* Alternate colors for the chessboard */
+        .cell:nth-child(odd) {
+            background-color: #f0d9b5; /* Light cell color */
         }
-        .black {
-            background-color: gray;
+
+        .cell:nth-child(even) {
+            background-color: #b58863; /* Dark cell color */
         }
-        .queen {
-            background-image: url("{% static 'queen.png' %}");
-            background-size: cover;
-            width: 60px;
-            height: 50px;
+
+        /* Color for the attacked positions */
+        .attacked {
+            background-color: #ffcccc;
         }
-        .attacking {
-            background-color: red;
-        }
-        .queens-row {
-            display: grid;
-            grid-template-columns: repeat(8, 50px);
-            gap: 10px; /* Add space between the queens */
-            margin-bottom: 10px;
+
+        .message {
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: green; /* Default text color */
+            display: none; /* Initially hidden */
         }
     </style>
 </head>
 <body>
-    <!-- Title of the puzzle -->
-    <h1>8 Queens Puzzle</h1>
+    <h1 class="title">8 Queens Puzzle</h1>
 
-    <!-- Row for queens placed above the board -->
-    <div class="queens-row">
-        {% for col in col_indices %}
-            <div class="queen"></div>
-        {% endfor %}
+    <div class="board-container">
+        <!-- Message for success -->
+        <div class="message" id="successMessage"></div>
+
+        <!-- Chessboard -->
+        <div class="board" id="chessBoard"></div>
     </div>
 
-    <!-- Chessboard -->
-    <div class="chessboard">
-        {% for row in row_indices %}
-            {% for col in col_indices %}
-                {% with queen_pos=row|stringformat:"d"|add:","|add:col|stringformat:"d" %}
-                    {% if queen_pos in queens_positions %}
-                        <div class="queen"></div>
-                    {% elif queen_pos in attacking_positions %}
-                        <div class="attacking"></div>
-                    {% else %}
-                        <div class="{% if row|add:col|divisibleby:2 %}white{% else %}black{% endif %}"></div>
-                    {% endif %}
-                {% endwith %}
-            {% endfor %}
-        {% endfor %}
-    </div>
+    <script>
+        // Define the URL for the queen image
+        const queenImageUrl = "{% static 'queen.png' %}";
+        const successMessage = document.getElementById('successMessage');
+
+        // Dynamically create the 8x8 chessboard
+        const board = document.getElementById('chessBoard');
+        for (let i = 0; i < 64; i++) {
+            const cell = document.createElement('div');
+            cell.classList.add('cell');
+            cell.setAttribute('data-index', i); // Add data attribute for the index
+            cell.addEventListener('click', () => placeQueen(cell)); // Add click event listener
+            // Alternate dark and light cells
+            if ((Math.floor(i / 8) + (i % 8)) % 2 === 0) {
+                cell.style.backgroundColor = '#f0d9b5'; // Light cell color
+            } else {
+                cell.style.backgroundColor = '#b58863'; // Dark cell color
+            }
+            board.appendChild(cell);
+        }
+
+        // Function to place or remove the queen on the board
+        function placeQueen(cell) {
+            const cellIndex = cell.getAttribute('data-index'); // Get the index of the clicked cell
+            const row = Math.floor(cellIndex / 8); // Calculate row
+            const col = cellIndex % 8; // Calculate column
+
+            if (cell.classList.contains('queen')) {
+                // If the cell already has a queen, remove it
+                cell.classList.remove('queen'); // Remove queen class
+                cell.style.backgroundImage = ''; // Remove the background image
+                successMessage.style.display = 'none'; // Hide success message if queen is removed
+            } else {
+                // Check if there's already a queen in that row, column, or diagonal
+                const existingQueens = document.querySelectorAll('.queen');
+                let isOccupied = false;
+                existingQueens.forEach(queenCell => {
+                    const queenIndex = Array.from(board.children).indexOf(queenCell);
+                    const queenRow = Math.floor(queenIndex / 8);
+                    const queenCol = queenIndex % 8;
+
+                    // Check for conflicts: same row, same column, or diagonal
+                    if (queenRow === row || queenCol === col || Math.abs(queenRow - row) === Math.abs(queenCol - col)) {
+                        isOccupied = true;
+                    }
+                });
+
+                if (!isOccupied) {
+                    cell.classList.add('queen'); // Add queen class
+                    cell.style.backgroundImage = `url('${queenImageUrl}')`; // Set queen image
+                    cell.style.backgroundSize = 'cover'; // Resize background
+                } else {
+                    alert("This column, row, or diagonal is already occupied!");
+                }
+            }
+
+            checkSolution(); // Check if the current arrangement is a solution
+        }
+
+        // Function to check if the current arrangement is a solution
+        function checkSolution() {
+            const queens = document.querySelectorAll('.queen');
+            if (queens.length === 8) {
+                const cols = new Set();
+                const diag1 = new Set(); // To track main diagonal
+                const diag2 = new Set(); // To track anti-diagonal
+
+                queens.forEach(queenCell => {
+                    const index = Array.from(board.children).indexOf(queenCell);
+                    const row = Math.floor(index / 8);
+                    const col = index % 8;
+
+                    if (cols.has(col) || diag1.has(row - col) || diag2.has(row + col)) {
+                        return; // If there's a conflict, exit
+                    }
+
+                    cols.add(col);
+                    diag1.add(row - col);
+                    diag2.add(row + col);
+                });
+
+                // If no conflicts, display success message
+                successMessage.innerText = "All 8 queens are placed correctly!";
+                successMessage.style.display = 'block';
+            } else {
+                successMessage.style.display = 'none'; // Hide message if not all queens are placed
+            }
+        }
+
+        // Load the initial solution
+        // Uncomment the next line if you want to fetch an initial solution from the server
+        // fetchSolution();
+    </script>
 </body>
 </html>
