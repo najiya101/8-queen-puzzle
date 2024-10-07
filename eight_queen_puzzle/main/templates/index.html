@@ -11,8 +11,9 @@
         }
 
         .title {
-            text-align: center; /* Center the text */
-            margin: 20px 0; /* Add some margin for spacing */
+            text-align: center;
+            margin: 40px 0;
+            color: brown;
         }
 
         .board-container {
@@ -27,7 +28,8 @@
             grid-template-columns: repeat(8, 50px);
             grid-template-rows: repeat(8, 50px);
             gap: 1px;
-            cursor: pointer; /* Show pointer cursor for chessboard */
+            cursor: pointer;
+            position: relative;
         }
 
         .cell {
@@ -36,26 +38,62 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            background-size: cover;
+            background-position: center;
         }
 
-        /* Alternate colors for the chessboard */
         .cell:nth-child(odd) {
-            background-color: #f0d9b5; /* Light cell color */
+            background-color: #f0d9b5;
         }
 
         .cell:nth-child(even) {
-            background-color: #b58863; /* Dark cell color */
+            background-color: #b58863;
         }
 
-        /* Color for the attacked positions */
         .attacked {
-            background-color: #ffcccc;
+            background-color: red;
         }
 
-        .message {
-            margin-bottom: 20px;
-            font-size: 24px;
-            color: green; /* Default text color */
+        .queen {
+            background-size: 80% 80%;
+            background-repeat: no-repeat;
+        }
+
+        .reset-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: brown;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .reset-button:hover {
+            background-color: #8B4513;
+        }
+
+        .success-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 50px;
+            color: green;
+            display: none;
+            font-weight: bold;
+            width: 400px;
+            text-align: center;
+            text-transform: uppercase;
+            background-color: transparent;
+        }
+
+        .error-message {
+            color: red; /* Color for error message */
+            font-size: 18px; /* Font size for error message */
+            margin-bottom: 10px; /* Space between error message and board */
             display: none; /* Initially hidden */
         }
     </style>
@@ -64,105 +102,126 @@
     <h1 class="title">8 Queens Puzzle</h1>
 
     <div class="board-container">
-        <!-- Message for success -->
-        <div class="message" id="successMessage"></div>
-
-        <!-- Chessboard -->
-        <div class="board" id="chessBoard"></div>
+        <div class="error-message" id="errorMessage">Cannot place queen here!</div> <!-- Error message -->
+        <div class="board" id="chessBoard">
+            <div class="success-message" id="successMessage">Success</div>
+        </div>
+        <button class="reset-button" id="resetButton">Reset Board</button>
     </div>
 
     <script>
-        // Define the URL for the queen image
         const queenImageUrl = "{% static 'queen.png' %}";
+        const maxQueens = 8;
+        let queenCount = 0;
+        const placedQueens = [];
         const successMessage = document.getElementById('successMessage');
+        const errorMessage = document.getElementById('errorMessage'); // Error message element
 
-        // Dynamically create the 8x8 chessboard
         const board = document.getElementById('chessBoard');
         for (let i = 0; i < 64; i++) {
             const cell = document.createElement('div');
             cell.classList.add('cell');
-            cell.setAttribute('data-index', i); // Add data attribute for the index
-            cell.addEventListener('click', () => placeQueen(cell)); // Add click event listener
-            // Alternate dark and light cells
+            cell.setAttribute('data-index', i);
+            cell.addEventListener('click', () => placeQueen(cell));
+
             if ((Math.floor(i / 8) + (i % 8)) % 2 === 0) {
-                cell.style.backgroundColor = '#f0d9b5'; // Light cell color
+                cell.style.backgroundColor = '#f0d9b5';
             } else {
-                cell.style.backgroundColor = '#b58863'; // Dark cell color
+                cell.style.backgroundColor = '#b58863';
             }
             board.appendChild(cell);
         }
 
-        // Function to place or remove the queen on the board
         function placeQueen(cell) {
-            const cellIndex = cell.getAttribute('data-index'); // Get the index of the clicked cell
-            const row = Math.floor(cellIndex / 8); // Calculate row
-            const col = cellIndex % 8; // Calculate column
+            const cellIndex = cell.getAttribute('data-index');
+            const row = Math.floor(cellIndex / 8);
+            const col = cellIndex % 8;
 
             if (cell.classList.contains('queen')) {
-                // If the cell already has a queen, remove it
-                cell.classList.remove('queen'); // Remove queen class
-                cell.style.backgroundImage = ''; // Remove the background image
-                successMessage.style.display = 'none'; // Hide success message if queen is removed
+                cell.classList.remove('queen');
+                cell.style.backgroundImage = '';
+                queenCount--;
+                placedQueens.splice(placedQueens.indexOf(`${row},${col}`), 1);
+                clearAttacks();
+                successMessage.style.display = 'none';
+                errorMessage.style.display = 'none'; // Hide error message if a queen is removed
+            } else if (queenCount < maxQueens && canPlaceQueen(row, col)) {
+                cell.classList.add('queen');
+                cell.style.backgroundImage = `url('${queenImageUrl}')`;
+                queenCount++;
+                placedQueens.push(`${row},${col}`);
+                errorMessage.style.display = 'none'; // Hide error message when placing queen
             } else {
-                // Check if there's already a queen in that row, column, or diagonal
-                const existingQueens = document.querySelectorAll('.queen');
-                let isOccupied = false;
-                existingQueens.forEach(queenCell => {
-                    const queenIndex = Array.from(board.children).indexOf(queenCell);
-                    const queenRow = Math.floor(queenIndex / 8);
-                    const queenCol = queenIndex % 8;
-
-                    // Check for conflicts: same row, same column, or diagonal
-                    if (queenRow === row || queenCol === col || Math.abs(queenRow - row) === Math.abs(queenCol - col)) {
-                        isOccupied = true;
-                    }
-                });
-
-                if (!isOccupied) {
-                    cell.classList.add('queen'); // Add queen class
-                    cell.style.backgroundImage = `url('${queenImageUrl}')`; // Set queen image
-                    cell.style.backgroundSize = 'cover'; // Resize background
-                } else {
-                    alert("This column, row, or diagonal is already occupied!");
-                }
+                errorMessage.style.display = 'block'; // Show error message if queen cannot be placed
             }
 
-            checkSolution(); // Check if the current arrangement is a solution
-        }
+            checkConflicts();
 
-        // Function to check if the current arrangement is a solution
-        function checkSolution() {
-            const queens = document.querySelectorAll('.queen');
-            if (queens.length === 8) {
-                const cols = new Set();
-                const diag1 = new Set(); // To track main diagonal
-                const diag2 = new Set(); // To track anti-diagonal
-
-                queens.forEach(queenCell => {
-                    const index = Array.from(board.children).indexOf(queenCell);
-                    const row = Math.floor(index / 8);
-                    const col = index % 8;
-
-                    if (cols.has(col) || diag1.has(row - col) || diag2.has(row + col)) {
-                        return; // If there's a conflict, exit
-                    }
-
-                    cols.add(col);
-                    diag1.add(row - col);
-                    diag2.add(row + col);
-                });
-
-                // If no conflicts, display success message
-                successMessage.innerText = "All 8 queens are placed correctly!";
+            if (queenCount === maxQueens) {
                 successMessage.style.display = 'block';
-            } else {
-                successMessage.style.display = 'none'; // Hide message if not all queens are placed
             }
         }
 
-        // Load the initial solution
-        // Uncomment the next line if you want to fetch an initial solution from the server
-        // fetchSolution();
+        function canPlaceQueen(row, col) {
+            return !placedQueens.some(pos => {
+                const [r, c] = pos.split(',').map(Number);
+                return r === row || c === col || Math.abs(r - row) === Math.abs(c - col);
+            });
+        }
+
+        function checkConflicts() {
+            const attackedCells = new Set();
+
+            placedQueens.forEach(pos => {
+                const [row, col] = pos.split(',').map(Number);
+
+                for (let i = 0; i < 8; i++) {
+                    attackedCells.add(row * 8 + i);
+                    attackedCells.add(i * 8 + col);
+                }
+
+                for (let i = -7; i <= 7; i++) {
+                    const diag1Row = row + i;
+                    const diag1Col = col + i;
+                    const diag2Row = row + i;
+                    const diag2Col = col - i;
+
+                    if (diag1Row >= 0 && diag1Row < 8 && diag1Col >= 0 && diag1Col < 8) {
+                        attackedCells.add(diag1Row * 8 + diag1Col);
+                    }
+                    if (diag2Row >= 0 && diag2Row < 8 && diag2Col >= 0 && diag2Col < 8) {
+                        attackedCells.add(diag2Row * 8 + diag2Col);
+                    }
+                }
+            });
+
+            clearAttacks();
+            attackedCells.forEach(index => {
+                board.children[index].classList.add('attacked');
+            });
+        }
+
+        function clearAttacks() {
+            const attackedCells = document.querySelectorAll('.attacked');
+            attackedCells.forEach(cell => {
+                cell.classList.remove('attacked');
+            });
+        }
+
+        function resetBoard() {
+            const cells = document.querySelectorAll('.cell');
+            cells.forEach(cell => {
+                cell.classList.remove('queen');
+                cell.style.backgroundImage = '';
+            });
+            queenCount = 0;
+            placedQueens.length = 0;
+            successMessage.style.display = 'none';
+            errorMessage.style.display = 'none'; // Hide error message on reset
+            clearAttacks();
+        }
+
+        document.getElementById('resetButton').addEventListener('click', resetBoard);
     </script>
 </body>
 </html>
