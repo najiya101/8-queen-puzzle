@@ -30,6 +30,15 @@ To set up this project locally, follow these steps:
 - Reset Board: Click on the reset button to clear the chessboard and start a new game.
 
 ## Technologies Used
-Backend: Django (Python)
-Frontend: HTML, CSS, JavaScript
-Algorithm: Backtracking for solving the 8 Queens Puzzle
+- Backend: Django (Python)
+- Frontend: HTML, CSS, JavaScript
+- Algorithm: Backtracking for solving the 8 Queens Puzzle
+
+## Screenshots
+
+<div>
+  <img src="https://github.com/user-attachments/assets/27276fee-3d9d-48fd-914e-a2b7505fae03" alt="Initial State" height="500"/>
+  <img src="https://github.com/user-attachments/assets/970e2b9e-215f-4d11-9c0c-434abf0460d3" alt="Queen's Placed" height="500"/>
+  <img src="https://github.com/user-attachments/assets/25c0f19d-b7b7-4c06-8c3d-03813941a189" alt="Conflict" height="500"/>
+  <img src="https://github.com/user-attachments/assets/25c0f19d-b7b7-4c06-8c3d-03813941a189" alt="Final" height="500"/>
+</div>
