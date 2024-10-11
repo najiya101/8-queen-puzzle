@@ -152,7 +152,8 @@
                 placedQueens.push(`${row},${col}`);
                 errorMessage.style.display = 'none'; // Hide error message when placing queen
             } else {
-                errorMessage.style.display = 'block'; // Show error message if queen cannot be placed
+                errorMessage.style.display = 'block';
+                setTimeout(() => { errorMessage.style.display = 'none'; }, 2000);
             }
 
             checkConflicts();
